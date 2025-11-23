@@ -165,39 +165,6 @@ checkCmdError "Start tomcat9.service" "false"
 ### Installation de guacamole ###
 ###                           ###
 #################################
-# Installation de freerdp2 via des fichiers deb
-FREERDP_SOURCES="./sources/freerdp2.10-dev"
-
-# libfreerdp-client2-2
-dpkg -i "$FREERDP_SOURCES/libfreerdp-client2-2/libfreerdp2-2/libavcodec59/libavutil57/libavutil57_5.1.7-0+deb12u1_arm64.deb"
-dpkg -i "$FREERDP_SOURCES/libfreerdp-client2-2/libfreerdp2-2/libavcodec59/libcodec2-1.0/libcodec2-1.0_1.0.5-1_arm64.deb"
-dpkg -i "$FREERDP_SOURCES/libfreerdp-client2-2/libfreerdp2-2/libavcodec59/libdav1d6/libdav1d6_1.0.0-2+deb12u1_arm64.deb"
-dpkg -i "$FREERDP_SOURCES/libfreerdp-client2-2/libfreerdp2-2/libavcodec59/libjxl0.7/libjxl0.7_0.7.0-10+deb12u1_arm64.deb"
-dpkg -i "$FREERDP_SOURCES/libfreerdp-client2-2/libfreerdp2-2/libavcodec59/librav1e0/librav1e0_0.5.1-6_arm64.deb"
-dpkg -i "$FREERDP_SOURCES/libfreerdp-client2-2/libfreerdp2-2/libavcodec59/libsvtav1enc1/libsvtav1enc1_1.4.1+dfsg-1_arm64.deb"
-dpkg -i "$FREERDP_SOURCES/libfreerdp-client2-2/libfreerdp2-2/libavcodec59/libswresample4/libswresample4_5.1.7-0+deb12u1_arm64.deb"
-dpkg -i "$FREERDP_SOURCES/libfreerdp-client2-2/libfreerdp2-2/libavcodec59/libvpx7/libvpx7_1.12.0-1+deb12u4_arm64.deb"
-dpkg -i "$FREERDP_SOURCES/libfreerdp-client2-2/libfreerdp2-2/libavcodec59/libx265-199/libx265-199_3.5-2+b1_arm64.deb"
-dpkg -i "$FREERDP_SOURCES/libfreerdp-client2-2/libfreerdp2-2/libavcodec59/libavcodec59_5.1.7-0+deb12u1_arm64.deb"
-dpkg -i "$FREERDP_SOURCES/libfreerdp-client2-2/libfreerdp2-2/libswscale6/libswscale6_5.1.7-0+deb12u1_arm64.deb"
-dpkg -i "$FREERDP_SOURCES/libfreerdp-client2-2/libfreerdp2-2/libwinpr2-2/libicu72/libicu72_72.1-3+deb12u1_arm64.deb"
-dpkg -i "$FREERDP_SOURCES/libfreerdp-client2-2/libfreerdp2-2/libwinpr2-2/libwinpr2-2_2.10.0+dfsg1-1_arm64.deb"
-dpkg -i "$FREERDP_SOURCES/libfreerdp-client2-2/libfreerdp2-2/libfreerdp2-2_2.10.0+dfsg1-1_arm64.deb"
-dpkg -i "$FREERDP_SOURCES/libfreerdp-client2-2/libfreerdp-client2-2_2.10.0+dfsg1-1_arm64.deb"
-# libfreerdp-server2-2
-dpkg -i "$FREERDP_SOURCES/libfreerdp-server2-2/libfreerdp-server2-2_2.10.0+dfsg1-1_arm64.deb"
-# libfreerdp-shadow-subsystem2-2
-dpkg -i "$FREERDP_SOURCES/libfreerdp-shadow-subsystem2-2/libfreerdp-shadow2-2/libwinpr-tools2-2/libwinpr-tools2-2_2.10.0+dfsg1-1_arm64.deb"
-dpkg -i "$FREERDP_SOURCES/libfreerdp-shadow-subsystem2-2/libfreerdp-shadow2-2/libfreerdp-shadow2-2_2.10.0+dfsg1-1_arm64.deb"
-dpkg -i "$FREERDP_SOURCES/libfreerdp-shadow-subsystem2-2/libfreerdp-shadow-subsystem2-2_2.10.0+dfsg1-1_arm64.deb"
-# libwinpr2-dev
-dpkg -i "$FREERDP_SOURCES/libwinpr2-dev/libssl-dev/libssl3/libssl3_3.0.17-1~deb12u2_arm64.deb"
-dpkg -i "$FREERDP_SOURCES/libwinpr2-dev/libssl-dev/libssl-dev_3.0.17-1~deb12u2_arm64.deb"
-dpkg -i "$FREERDP_SOURCES/libwinpr2-dev/libwinpr2-dev_2.10.0+dfsg1-1_arm64.deb"
-# winpr-utils
-dpkg -i "$FREERDP_SOURCES/winpr-utils/winpr-utils_2.10.0+dfsg1-1_arm64.deb"
-
-dpkg -i "$FREERDP_SOURCES/freerdp2-dev_2.10.0+dfsg1-1_arm64.deb"
 
 #######################################################
 # Action saved during test
@@ -207,82 +174,15 @@ wget -O /tmp/guacamole.tar.gz https://downloads.apache.org/guacamole/1.5.5/sourc
 mkdir -p /etc/guacamole
 tar xzf /tmp/guacamole.tar.gz -C /tmp/
 mv /tmp/guacamole-server-*/* /etc/guacamole/
-apt install -y build-essential libpng-dev libjpeg-dev libcairo2-dev
-
-cd /etc/guacamole
-./configure -with-systemd-dir=/etc/systemd/system/
-
-# apt install -y freerdp2-dev libpango1.0-dev libavcodec-dev libavformat-dev libavformat-dev libssh2-1-dev libssl-dev libswscale-dev libtelnet-dev libvncserver-dev libvorbis-dev libpulse-dev libwebsockets-dev libwebp-dev
-apt install -y libpango1.0-dev libavcodec-dev libavformat-dev libavformat-dev libssh2-1-dev libssl-dev libswscale-dev libtelnet-dev libvncserver-dev libvorbis-dev libpulse-dev libwebsockets-dev libwebp-dev
-./configure -with-systemd-dir=/etc/systemd/system/
-
 sudo apt install build-essential libcairo2-dev libpng-dev      \
                  libtool-bin libossp-uuid-dev libvncserver-dev \
                  libssh2-1-dev libtelnet-dev libwebsockets-dev \
                  libpulse-dev libvorbis-dev libwebp-dev        \
                  libssl-dev libpango1.0-dev libswscale-dev     \
-                 libavcodec-dev libavutil-dev libavformat-dev
+                 libavcodec-dev libavutil-dev libavformat-dev  \
+                 freerdp2-dev libjpeg-dev
 
-### freerdp2-dev
-# https://debian.pkgs.org/12/debian-main-arm64/freerdp2-dev_2.10.0+dfsg1-1_arm64.deb.html
-# libfreerdp-client2-2
-#     libfreerdp2-2
-#         libavcodec59
-#             libavutil57
-#             libcodec2-1.0
-#             libdav1d6
-#             libjxl0.7
-#             librav1e0
-#             libsvtav1enc1
-#             libswresample4
-#             libvpx7
-#             libx265-199
-#         libswscale6
-#         libwinpr2-2
-#             libicu72
-# libfreerdp-server2-2
-# libfreerdp-shadow-subsystem2-2
-#     libfreerdp-shadow2-2
-#         libwinpr-tools2-2
-# libwinpr2-dev
-#     libssl-dev
-#         libssl3
-# winpr-utils
-
-
-
-
-
-
-
-
-### freerdp2-dev
-# https://debian.pkgs.org/11/debian-main-arm64/freerdp2-dev_2.3.0+dfsg1-2+deb11u1_arm64.deb.html
-with source .deb:
-    libfreerdp2-2
-        libavcodec58
-            libaom0
-            libavutil56
-            libcodec2-0.9
-            libdav1d4
-            libswresample3
-            libvpx6
-            libwebp6
-            libx264-160
-            libx265-192
-        libssl1.1
-        libswscale5
-        libwinpr2-2
-            libicu67
-    libfreerdp-client2-2
-    libfreerdp-server2-2
-    libfreerdp-shadow2-2
-        libwinpr-tools2-2
-    libfreerdp-shadow-subsystem2-2
-    libwinpr2-dev
-    winpr-utils
-
-# wsock32
-with source .deb:
-
-
+cd /etc/guacamole
+./configure -with-systemd-dir=/etc/systemd/system/
+make
+make install
