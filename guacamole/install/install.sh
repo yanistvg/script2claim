@@ -171,23 +171,23 @@ checkCmdError "Start tomcat9.service" "false"
 #################################
 writeLog "Start installing Guacamole" "success"
 
-wget -O /tmp/guacamole.tar.gz "$GUACAMOLE_SERVER_URL" > /dev/null 2>&1
+/usr/bin/wget -O /tmp/guacamole.tar.gz "$GUACAMOLE_SERVER_URL" > /dev/null 2>&1
 checkCmdError "    Download guacamole sources" "true"
-mkdir -p "$GUACAMOLE_SERVER_HOME" > /dev/null 2>&1
+/usr/bin/mkdir -p "$GUACAMOLE_SERVER_HOME" > /dev/null 2>&1
 checkCmdError "    Create guacamole home" "true"
-tar xzf /tmp/guacamole.tar.gz -C /tmp/ > /dev/null 2>&1
+/usr/bin/tar xzf /tmp/guacamole.tar.gz -C /tmp/ > /dev/null 2>&1
 checkCmdError "    Unzip Guacamole sources" "true"
-mv /tmp/guacamole-server-*/* "$GUACAMOLE_SERVER_HOME/" > /dev/null 2>&1
+/usr/bin/mv /tmp/guacamole-server-*/* "$GUACAMOLE_SERVER_HOME/" > /dev/null 2>&1
 checkCmdError "    Put sources into guacamole sources" "true"
-rm -rf /tmp/guacamole-server-*/ /tmp/guacamole.tar.gz > /dev/null 2>&1
+/usr/bin/rm -rf /tmp/guacamole-server-*/ /tmp/guacamole.tar.gz > /dev/null 2>&1
 checkCmdError "    Remove sources files" "false"
-sudo apt install build-essential libcairo2-dev libpng-dev      \
-                 libtool-bin libossp-uuid-dev libvncserver-dev \
-                 libssh2-1-dev libtelnet-dev libwebsockets-dev \
-                 libpulse-dev libvorbis-dev libwebp-dev        \
-                 libssl-dev libpango1.0-dev libswscale-dev     \
-                 libavcodec-dev libavutil-dev libavformat-dev  \
-                 freerdp2-dev libjpeg-dev > /dev/null 2>&1
+/usr/bin/apt-get install build-essential libcairo2-dev libpng-dev      \
+                         libtool-bin libossp-uuid-dev libvncserver-dev \
+                         libssh2-1-dev libtelnet-dev libwebsockets-dev \
+                         libpulse-dev libvorbis-dev libwebp-dev        \
+                         libssl-dev libpango1.0-dev libswscale-dev     \
+                         libavcodec-dev libavutil-dev libavformat-dev  \
+                         freerdp2-dev libjpeg-dev > /dev/null 2>&1
 checkCmdError "    Install dependencies with apt-get" "true"
 
 cd "$GUACAMOLE_SERVER_HOME" > /dev/null 2>&1
@@ -197,13 +197,16 @@ make > /dev/null 2>&1
 checkCmdError "    Compile guacamole sources" "true"
 make install > /dev/null 2>&1
 checkCmdError "    Install guacamole" "true"
-ldconfig > /dev/null 2>&1
+/usr/sbin/ldconfig > /dev/null 2>&1
 checkCmdError "    Execute ldconfig" "false"
 
-echo GUACAMOLE_HOME=/etc/guacamole > /etc/default/tomcat9
+/usr/bin/echo GUACAMOLE_HOME=/etc/guacamole > /etc/default/tomcat9
 
 writeLog "Start installing Guacamole client" "success"
-wget -O /tmp/guacamole-1.5.5.war "$GUACAMOLE_CLIENT_URL" > /dev/null 2>&1
+/usr/bin/wget -O /tmp/guacamole-1.5.5.war "$GUACAMOLE_CLIENT_URL" > /dev/null 2>&1
 checkCmdError "    Download client sources" "true"
-mv guacamole-1.5.5.war "$GUACAMOLE_CLIENT_HOME/guacamole.war" > /dev/null 2>&1
+/usr/bin/mv guacamole-1.5.5.war "$GUACAMOLE_CLIENT_HOME/guacamole.war" > /dev/null 2>&1
 checkCmdError "    Move sources into tomcat server" "true"
+/usr/bin/chown tomcat:tomcat "$GUACAMOLE_CLIENT_HOME/guacamole.war"
+/usr/bin/systemctl restart tomcat9.service guacd.service > /dev/null 2>&1
+checkCmdError "Start services guacd and tomcat" "false"
