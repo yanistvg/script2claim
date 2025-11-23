@@ -182,6 +182,7 @@ dpkg -i "$FREERDP_SOURCES/libfreerdp-client2-2/libfreerdp2-2/libavcodec59/libavc
 dpkg -i "$FREERDP_SOURCES/libfreerdp-client2-2/libfreerdp2-2/libswscale6/libswscale6_5.1.7-0+deb12u1_arm64.deb"
 dpkg -i "$FREERDP_SOURCES/libfreerdp-client2-2/libfreerdp2-2/libwinpr2-2/libicu72/libicu72_72.1-3+deb12u1_arm64.deb"
 dpkg -i "$FREERDP_SOURCES/libfreerdp-client2-2/libfreerdp2-2/libwinpr2-2/libwinpr2-2_2.10.0+dfsg1-1_arm64.deb"
+dpkg -i "$FREERDP_SOURCES/libfreerdp-client2-2/libfreerdp2-2/libfreerdp2-2_2.10.0+dfsg1-1_arm64.deb"
 dpkg -i "$FREERDP_SOURCES/libfreerdp-client2-2/libfreerdp-client2-2_2.10.0+dfsg1-1_arm64.deb"
 # libfreerdp-server2-2
 dpkg -i "$FREERDP_SOURCES/libfreerdp-server2-2/libfreerdp-server2-2_2.10.0+dfsg1-1_arm64.deb"
