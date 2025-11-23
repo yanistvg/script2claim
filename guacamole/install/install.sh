@@ -8,6 +8,10 @@
 
 TOMCAT_URL="https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.112/bin/apache-tomcat-9.0.112.tar.gz"
 TOMCAT_HOME="/opt/tomcat"
+GUACAMOLE_SERVER_URL="https://downloads.apache.org/guacamole/1.5.5/source/guacamole-server-1.5.5.tar.gz"
+GUACAMOLE_SERVER_HOME="/etc/guacamole"
+GUACAMOLE_CLIENT_URL="https://downloads.apache.org/guacamole/1.5.5/binary/guacamole-1.5.5.war"
+GUACAMOLE_CLIENT_HOME="/opt/tomcat/webapps"
 
 # Colors define
 cl_black="\033[1;30m"
@@ -165,24 +169,41 @@ checkCmdError "Start tomcat9.service" "false"
 ### Installation de guacamole ###
 ###                           ###
 #################################
+writeLog "Start installing Guacamole" "success"
 
-#######################################################
-# Action saved during test
-# To finish
-
-wget -O /tmp/guacamole.tar.gz https://downloads.apache.org/guacamole/1.5.5/source/guacamole-server-1.5.5.tar.gz
-mkdir -p /etc/guacamole
-tar xzf /tmp/guacamole.tar.gz -C /tmp/
-mv /tmp/guacamole-server-*/* /etc/guacamole/
+wget -O /tmp/guacamole.tar.gz "$GUACAMOLE_SERVER_URL" > /dev/null 2>&1
+checkCmdError "    Download guacamole sources" "true"
+mkdir -p "$GUACAMOLE_SERVER_HOME" > /dev/null 2>&1
+checkCmdError "    Create guacamole home" "true"
+tar xzf /tmp/guacamole.tar.gz -C /tmp/ > /dev/null 2>&1
+checkCmdError "    Unzip Guacamole sources" "true"
+mv /tmp/guacamole-server-*/* "$GUACAMOLE_SERVER_HOME/" > /dev/null 2>&1
+checkCmdError "    Put sources into guacamole sources" "true"
+rm -rf /tmp/guacamole-server-*/ /tmp/guacamole.tar.gz > /dev/null 2>&1
+checkCmdError "    Remove sources files" "false"
 sudo apt install build-essential libcairo2-dev libpng-dev      \
                  libtool-bin libossp-uuid-dev libvncserver-dev \
                  libssh2-1-dev libtelnet-dev libwebsockets-dev \
                  libpulse-dev libvorbis-dev libwebp-dev        \
                  libssl-dev libpango1.0-dev libswscale-dev     \
                  libavcodec-dev libavutil-dev libavformat-dev  \
-                 freerdp2-dev libjpeg-dev
+                 freerdp2-dev libjpeg-dev > /dev/null 2>&1
+checkCmdError "    Install dependencies with apt-get" "true"
 
-cd /etc/guacamole
-./configure -with-systemd-dir=/etc/systemd/system/
-make
-make install
+cd "$GUACAMOLE_SERVER_HOME" > /dev/null 2>&1
+./configure -with-systemd-dir=/etc/systemd/system/ > /dev/null 2>&1
+checkCmdError "    Configure guacamole sources" "true"
+make > /dev/null 2>&1
+checkCmdError "    Compile guacamole sources" "true"
+make install > /dev/null 2>&1
+checkCmdError "    Install guacamole" "true"
+ldconfig > /dev/null 2>&1
+checkCmdError "    Execute ldconfig" "false"
+
+echo GUACAMOLE_HOME=/etc/guacamole > /etc/default/tomcat9
+
+writeLog "Start installing Guacamole client" "success"
+wget -O /tmp/guacamole-1.5.5.war "$GUACAMOLE_CLIENT_URL" > /dev/null 2>&1
+checkCmdError "    Download client sources" "true"
+mv guacamole-1.5.5.war "$GUACAMOLE_CLIENT_HOME/guacamole.war" > /dev/null 2>&1
+checkCmdError "    Move sources into tomcat server" "true"
