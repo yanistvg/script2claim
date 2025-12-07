@@ -13,6 +13,11 @@ GUACAMOLE_SERVER_HOME="/etc/guacamole"
 GUACAMOLE_CLIENT_URL="https://downloads.apache.org/guacamole/1.5.5/binary/guacamole-1.5.5.war"
 GUACAMOLE_CLIENT_HOME="/opt/tomcat/webapps"
 
+GUACAMOLE_DB_NAME="guacamole"
+GUACAMOLE_DB_USER="guacamole"
+GUACAMOLE_DB_PASSWD="guacamole"
+GUACAMOLE_JDBC_EXT="https://downloads.apache.org/guacamole/1.5.5/binary/guacamole-auth-jdbc-1.5.5.tar.gz"
+
 # Colors define
 cl_black="\033[1;30m"
 cl_red="\033[1;31m"
@@ -181,13 +186,13 @@ checkCmdError "    Unzip Guacamole sources" "true"
 checkCmdError "    Put sources into guacamole sources" "true"
 /usr/bin/rm -rf /tmp/guacamole-server-*/ /tmp/guacamole.tar.gz > /dev/null 2>&1
 checkCmdError "    Remove sources files" "false"
-/usr/bin/apt-get install build-essential libcairo2-dev libpng-dev      \
-                         libtool-bin libossp-uuid-dev libvncserver-dev \
-                         libssh2-1-dev libtelnet-dev libwebsockets-dev \
-                         libpulse-dev libvorbis-dev libwebp-dev        \
-                         libssl-dev libpango1.0-dev libswscale-dev     \
-                         libavcodec-dev libavutil-dev libavformat-dev  \
-                         freerdp2-dev libjpeg-dev > /dev/null 2>&1
+/usr/bin/apt-get install -y build-essential libcairo2-dev libpng-dev \
+    libtool-bin libossp-uuid-dev libvncserver-dev                    \
+    libssh2-1-dev libtelnet-dev libwebsockets-dev                    \
+    libpulse-dev libvorbis-dev libwebp-dev                           \
+    libssl-dev libpango1.0-dev libswscale-dev                        \
+    libavcodec-dev libavutil-dev libavformat-dev                     \
+    freerdp2-dev libjpeg-dev > /dev/null 2>&1
 checkCmdError "    Install dependencies with apt-get" "true"
 
 cd "$GUACAMOLE_SERVER_HOME" > /dev/null 2>&1
@@ -205,8 +210,82 @@ checkCmdError "    Execute ldconfig" "false"
 writeLog "Start installing Guacamole client" "success"
 /usr/bin/wget -O /tmp/guacamole-1.5.5.war "$GUACAMOLE_CLIENT_URL" > /dev/null 2>&1
 checkCmdError "    Download client sources" "true"
-/usr/bin/mv guacamole-1.5.5.war "$GUACAMOLE_CLIENT_HOME/guacamole.war" > /dev/null 2>&1
+/usr/bin/mv /tmp/guacamole-1.5.5.war "$GUACAMOLE_CLIENT_HOME/guacamole.war" > /dev/null 2>&1
 checkCmdError "    Move sources into tomcat server" "true"
 /usr/bin/chown tomcat:tomcat "$GUACAMOLE_CLIENT_HOME/guacamole.war"
 /usr/bin/systemctl restart tomcat9.service guacd.service > /dev/null 2>&1
 checkCmdError "Start services guacd and tomcat" "false"
+
+#############################################################
+###                                                       ###
+### Install mariadb and configure guacamole default setup ###
+###                                                       ###
+#############################################################
+writeLog "Create folders for gucamole" "success"
+/usr/bin/rm -rf "$GUACAMOLE_SERVER_HOME/*"
+checkCmdError "    Remove all gucamole sources" "false"
+/usr/bin/mkdir "$GUACAMOLE_SERVER_HOME/lib" > /dev/null 2>&1
+checkCmdError "    Create lib folder" "true"
+/usr/bin/mkdir "$GUACAMOLE_SERVER_HOME/extensions" > /dev/null 2>&1
+checkCmdError "    Create extensions folder" "true"
+
+# Download mariadb
+writeLog "Start install MariaDB client and server" "success"
+/usr/bin/apt-get install -y mariadb-server mariadb-client > /dev/null 2>&1
+checkCmdError "Install of MariaDB" "true"
+
+# Create sql database
+writeLog "Create database: $GUACAMOLE_DB_NAME; user: $GUACAMOLE_DB_USER; for MariaDB" "success"
+/usr/bin/cat > /tmp/guacamole-db-config.sql <<-EOF
+CREATE DATABASE $GUACAMOLE_DB_NAME;
+CREATE USER '$GUACAMOLE_DB_USER'@'localhost' IDENTIFIED BY '$GUACAMOLE_DB_PASSWD';
+GRANT ALL PRIVILEGES ON $GUACAMOLE_DB_NAME.* TO '$GUACAMOLE_DB_USER'@'localhost';
+FLUSH PRIVILEGES;
+EOF
+/usr/bin/mysql -u root < /tmp/guacamole-db-config.sql
+checkCmdError "Initiale setup of SQL" "true"
+/usr/bin/rm -rf /tmp/guacamole-db-config.sql > /dev/null 2>&1
+
+# Download JDBC extensions need to gucamole
+writeLog "Download extensions need to guacamole: JDBC" "success"
+/usr/bin/wget -O /tmp/guacamole-jdbc.tar.gz "$GUACAMOLE_JDBC_EXT" > /dev/null 2>&1
+checkCmdError "    Download JDBC sources" "true"
+/usr/bin/tar xzf /tmp/guacamole-jdbc.tar.gz -C /tmp/ > /dev/null 2>&1
+checkCmdError "    Unzip JDBC sources" "true"
+/usr/bin/cat /tmp/guacamole-auth-jdbc-1.5.5/mysql/schema/*.sql | mysql -u root $GUACAMOLE_DB_NAME
+checkCmdError "    Execute JDBC SQL script" "true"
+/usr/bin/cp /tmp/guacamole-auth-jdbc-1.5.5/mysql/guacamole-auth-jdbc-mysql-1.5.5.jar "$GUACAMOLE_SERVER_HOME/extensions/"
+checkCmdError "    Put extentions in extentions folder" "false"
+/usr/bin/rm -rf /tmp/guacamole-jdbc.tar.gz /tmp/guacamole-auth-jdbc-1.5.5
+
+# Install mysql connector
+writeLog "Download lib need to guacamole: MySQL connector" "success"
+/usr/bin/wget -O /tmp/mysql-connector-java-8.0.30.tar.gz \
+    https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-8.0.30.tar.gz > /dev/null 2>&1
+checkCmdError "    Download MySQL connector jar" "true"
+/usr/bin/tar xzf /tmp/mysql-connector-java-8.0.30.tar.gz -C /tmp/ > /dev/null 2>&1
+checkCmdError "    Unzip MySQL connector sources" "true"
+/usr/bin/mv /tmp/mysql-connector-java-8.0.30/mysql-connector-java-8.0.30.jar "$GUACAMOLE_SERVER_HOME/lib/" > /dev/null 2>&1
+checkCmdError "    Move jar file into lib guacamole folder" "true"
+/usr/bin/rm -rf /tmp/mysql-connector-java-8.0.30 /tmp/mysql-connector-java-8.0.30.tar.gz
+
+### Guacamole properties file ###
+writeLog "Create guacamole properties file with minimal parameters" "success"
+/usr/bin/echo -e "### Guacamole Properties file\n"       > "$GUACAMOLE_SERVER_HOME/guacamole.properties"
+/usr/bin/echo -e "#   Guacamole"                        >> "$GUACAMOLE_SERVER_HOME/guacamole.properties"
+/usr/bin/echo -e "guacd-hostname: localhost"            >> "$GUACAMOLE_SERVER_HOME/guacamole.properties"
+/usr/bin/echo -e "guacd-port: 4822"                     >> "$GUACAMOLE_SERVER_HOME/guacamole.properties"
+/usr/bin/echo -e "#   Mysql"                            >> "$GUACAMOLE_SERVER_HOME/guacamole.properties"
+/usr/bin/echo -e "mysql-hostname: localhost"            >> "$GUACAMOLE_SERVER_HOME/guacamole.properties"
+/usr/bin/echo -e "mysql-port: 3306"                     >> "$GUACAMOLE_SERVER_HOME/guacamole.properties"
+/usr/bin/echo -e "mysql-database: $GUACAMOLE_DB_NAME"   >> "$GUACAMOLE_SERVER_HOME/guacamole.properties"
+/usr/bin/echo -e "mysql-username: $GUACAMOLE_DB_USER"   >> "$GUACAMOLE_SERVER_HOME/guacamole.properties"
+/usr/bin/echo -e "mysql-password: $GUACAMOLE_DB_PASSWD" >> "$GUACAMOLE_SERVER_HOME/guacamole.properties"
+
+/usr/bin/ln -s "$GUACAMOLE_SERVER_HOME" "$TOMCAT_HOME/.guacamole"
+checkCmdError "Create symbolic link of gucamole for tomcat" "true"
+
+# Restart services
+/usr/bin/systemctl daemon-reload
+/usr/bin/systemctl restart tomcat9.service guacd.service
+checkCmdError "Restart services tomcat9 and guacd" "true"
